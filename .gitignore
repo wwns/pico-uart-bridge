@@ -1,0 +1,17 @@
+# Srodowisko wirtualne
+.venv/
+
+# VS Code
+.vscode/
+
+# MicroPython cache
+__pycache__/
+*.pyc
+
+# Pliki firmware (nie trzymaj w repo)
+*.uf2
+*.zip
+*.exe
+
+# Lokalne logi
+*.log
