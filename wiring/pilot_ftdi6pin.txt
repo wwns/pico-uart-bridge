@@ -98,6 +98,20 @@
     Stop     : 1
     Flow ctrl: brak  (zacznij bez flow control — BEZPIECZNIEJ)
 
-  URUCHOMIENIE (zaczynaj od minimalnego polaczenia!):
+  URUCHOMIENIE Z RMIR (JP1 — main_jp1.py):
+    ┌───────────────────────────────────────────────────────────────┐
+    │  PROBLEM: main.py domyslnie dziala na 115200 baud.            │
+    │  RMIR/JP1 wymaga 9600 baud — niezgodnosc = brak polaczenia.  │
+    │  Rozwiazanie: uzyj main_jp1.py (stale 9600 baud, brak menu)  │
+    └───────────────────────────────────────────────────────────────┘
+
+    mpremote cp main_jp1.py :main.py + reset
+
+    W RMIR:
+      Interface  : JP1.X Serial
+      Port       : COM Pico (sprawdz Menedzer Urzadzen)
+      Baudrate   : 9600 (lub Auto-detect)
+
+  URUCHOMIENIE Z TERMINALEM (main.py — wybor baudrate):
     mpremote cp main.py :main.py + reset
     Wpisz +++ -> wybierz baudrate pilota -> [go]
