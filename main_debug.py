@@ -2,60 +2,64 @@
 Raspberry Pi Pico - Przezroczysty most USB <-> UART z RTS/CTS + Debug
 ======================================================================
 
- PINOUT PICO v1
- ┌──────────────────────────────────────────────────────────────────┐
- │                   micro-USB (PC)                                 │
- │                       │                                          │
- │  ┌────────────────────┴────────────────────────────────┐        │
- │  │ GP0  [ 1]  [40] VBUS (5V)                           │        │
- │  │ GP1  [ 2]  [39] VSYS                                │        │
- │  │ GND  [ 3]  [38] GND                                 │        │
- │  │ GP2  [ 4]  [37] 3V3_EN                              │        │
- │  │ GP3  [ 5]  [36] 3V3 (OUT)                           │        │
- │  │ GP4  [ 6]  [35] ADC_VREF                            │        │
- │  │ GP5  [ 7]  [34] GP28 / A2                           │        │
- │  │ GND  [ 8]  [33] GND                                 │        │
- │  │ GP6  [ 9]  [32] GP27 / A1                           │        │
- │  │ GP7  [10]  [31] GP26 / A0                           │        │
- │  │ GP8  [11]  [30] RUN                                 │        │
- │  │ GP9  [12]  [29] GP22                                │        │
- │  │ GND  [13]  [28] GND                                 │        │
- │  │ GP10 [14]  [27] GP21                                │        │
- │  │ GP11 [15]  [26] GP20                                │        │
- │  │ GP12 [16]  [25] GP19                                │        │
- │  │ GP13 [17]  [24] GP18                                │        │
- │  │ GND  [18]  [23] GND                                 │        │
- │  │ GP14 [19]  [22] GP17                                │        │
- │  │ GP15 [20]  [21] GP16                                │        │
- │  └─────────────────────────────────────────────────────┘        │
- │                                                                  │
- │  [LED] GP25 (wbudowany)    [BOOTSEL] przycisk                   │
- └──────────────────────────────────────────────────────────────────┘
-
- UZYTE PINY:
- ┌─────┬───────┬────────────────────────────────────────────────────┐
- │ Pin │ GPIO  │ Funkcja                                            │
- ├─────┼───────┼────────────────────────────────────────────────────┤
- │  1  │ GP0   │ UART0 TX  ──►  RX urzadzenia                      │
- │  2  │ GP1   │ UART0 RX  ◄──  TX urzadzenia                      │
- │  3  │ GND   │ Masa      ────  GND urzadzenia                     │
- │  4  │ GP2   │ UART0 CTS ◄──  RTS urzadzenia  [flow ctrl, opcja] │
- │  5  │ GP3   │ UART0 RTS ──►  CTS urzadzenia  [flow ctrl, opcja] │
- │  6  │ GP4   │ UART1 TX  ──►  RX adaptera debug (tylko TX!)      │
- │  -  │ GP25  │ LED wbudowany (wskaznik aktywnosci)                │
- └─────┴───────┴────────────────────────────────────────────────────┘
-
+ PINOUT PICO v1  (na podstawie oficjalnego schematu)
+ ╔══════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║                         RASPBERRY Pi PICO v1 — KOMPLETNY PINOUT                            ║
+ ╚══════════════════════════════════════════════════════════════════════════════════════════════╝
+ 
+                                            ┌──[micro USB]──┐
+                                            │  LED (GP25) ● │
+                                            │               │
+  UART0TX I2C0SDA SPI0RX  ★ GP0  [ 1] ────●┤               ├●──── [40] VBUS  (5V z USB)
+  UART0RX I2C0SCL SPI0CSn ★ GP1  [ 2] ────●┤               ├●──── [39] VSYS  (zasilanie)
+                     GND    GND  [ 3] ────■┤               ├■──── [38] GND
+  I2C1SDA SPI0SCK        ★ GP2  [ 4] ────●┤               ├●──── [37] 3V3_EN
+  I2C1SCL SPI0TX         ★ GP3  [ 5] ────●┤  [BOOTSEL]    ├●──── [36] 3V3 OUT (3.3V/300mA)
+  UART1TX I2C0SDA SPI0RX ★ GP4  [ 6] ────●┤               ├●──── [35] ADC_VREF
+  UART1RX I2C0SCL SPI0CSn  GP5  [ 7] ────●┤               ├●──── [34] GP28 / ADC2
+                     GND    GND  [ 8] ────■┤               ├■──── [33] AGND
+  I2C1SDA SPI0SCK           GP6  [ 9] ────●┤               ├●──── [32] GP27 / ADC1 / I2C1SCL
+  I2C1SCL SPI0TX             GP7  [10] ────●┤               ├●──── [31] GP26 / ADC0 / I2C1SDA
+  UART1TX I2C0SDA SPI1RX     GP8  [11] ────●┤               ├●──── [30] RUN  (reset)
+  UART1RX I2C0SCL SPI1CSn    GP9  [12] ────●┤               ├●──── [29] GP22
+                     GND    GND  [13] ────■┤               ├■──── [28] GND
+  I2C1SDA SPI1SCK            GP10 [14] ────●┤               ├●──── [27] GP21 / I2C0SCL
+  I2C1SCL SPI1TX             GP11 [15] ────●┤               ├●──── [26] GP20 / I2C0SDA
+  UART0TX I2C0SDA SPI1RX     GP12 [16] ────●┤               ├●──── [25] GP19 / I2C1SCL / SPI0TX
+  UART0RX I2C0SCL SPI1CSn    GP13 [17] ────●┤               ├●──── [24] GP18 / I2C1SDA / SPI0SCK
+                     GND    GND  [18] ────■┤               ├■──── [23] GND
+  I2C1SDA SPI1SCK            GP14 [19] ────●┤               ├●──── [22] GP17 / UART0RX / SPI0CSn
+  I2C1SCL SPI1TX             GP15 [20] ────●┤               ├●──── [21] GP16 / UART0TX / SPI0RX
+                                            │               │
+                                            └──●───■───●────┘
+                                             SWCLK GND SWDIO
+                                             (SWD debug port)
+ 
+  ★ = piny uzyte w projekcie bridge
+ 
+ ╔═════╦════════╦══════════════╦══════════════════════════════════════════════════════════════╗
+ ║ Pin ║  GPIO  ║  Peryferial  ║  Funkcja w projekcie                                        ║
+ ╠═════╬════════╬══════════════╬══════════════════════════════════════════════════════════════╣
+ ║  1  ║  GP0   ║  UART0 TX   ║  ──►  RX urzadzenia docelowego                              ║
+ ║  2  ║  GP1   ║  UART0 RX   ║  ◄──  TX urzadzenia docelowego                              ║
+ ║  3  ║  GND   ║  Masa       ║  ────  GND urzadzenia + GND adaptera debug                   ║
+ ║  4  ║  GP2   ║  UART0 CTS  ║  ◄──  RTS urzadzenia  [flow ctrl, wl. przez [rts] w menu]   ║
+ ║  5  ║  GP3   ║  UART0 RTS  ║  ──►  CTS urzadzenia  [flow ctrl, wl. przez [rts] w menu]   ║
+ ║  6  ║  GP4   ║  UART1 TX   ║  ──►  RX adaptera debug (tylko TX!)  [wl. przez [dbg]]      ║
+ ║  —  ║  GP25  ║  GPIO OUT   ║  LED wbudowany (6x blink=start, swieci=bridge aktywny)       ║
+ ╚═════╩════════╩══════════════╩══════════════════════════════════════════════════════════════╝
+ 
  POLACZENIE MINIMALNE (bez flow control):
    Pico GP0 (pin 1) ──►  RX urzadzenia
    Pico GP1 (pin 2) ◄──  TX urzadzenia
    Pico GND (pin 3) ────  GND urzadzenia
 
  POLACZENIE Z RTS/CTS:
-   Pico GP0 (pin 1) ──►  RX
-   Pico GP1 (pin 2) ◄──  TX
+   Pico GP0 (pin 1) ──►  RX urzadzenia
+   Pico GP1 (pin 2) ◄──  TX urzadzenia
    Pico GP2 (pin 4) ◄──  RTS urzadzenia
    Pico GP3 (pin 5) ──►  CTS urzadzenia
-   Pico GND (pin 3) ────  GND
+   Pico GND (pin 3) ────  GND urzadzenia
 
  DEBUG (opcjonalny, osobny adapter USB-serial 3.3V):
    Pico GP4 (pin 6) ──►  RX adaptera debug
