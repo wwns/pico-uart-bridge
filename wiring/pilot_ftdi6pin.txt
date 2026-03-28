@@ -49,31 +49,55 @@
                        │  ● LED (GP25)       │   [1] VDD   — NIE PODLACZAC
                        └─────────────────────┘   [5] RESET — NIE PODLACZAC
 
-  SCHEMAT LINIOWY — PRZEWODY:
+  SCHEMAT LINIOWY — BEZPIECZNE POLACZENIE (tylko 3 przewody!):
 
     PICO GP0 (pin 1)  TX  ────────────────────────►  [6] RXD  pilota  (Bialy)
     PICO GP1 (pin 2)  RX  ◄────────────────────────  [4] TXD  pilota  (Zielony)
     PICO GND (pin 3)  ■   ──────────────────────────  [3] GND  pilota  (Czarny)
-    PICO GP2 (pin 4)  CTS ◄────────────────────────  [2] RTS  pilota  (Zolty)  [opcja]
 
-    NIE PODLACZAC: [1] VDD — pilot zasilany bateriami
-    NIE PODLACZAC: [5] RESET — zresetuje procesor pilota
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  ⚠  OSTRZEZENIE — NIE PODLACZAC:                               ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  [1] VDD   — pilot ma baterie, podanie napiecia spali pilota!   ║
+  ║  [5] RESET — zresetuje procesor pilota nieoczekiwanie           ║
+  ║                                                                  ║
+  ║  [2] RTS  (Zolty) — NIEBEZPIECZNY!                             ║
+  ║    RTS pilota to jego WYJSCIE (sygnalizuje ze jest gotowy).     ║
+  ║    Jesli pilot pracuje na 5V, ten sygnal 5V wejdzie na Pico     ║
+  ║    GP2 (max 3.3V) i SPALI PICO.                                 ║
+  ║    Przed podlaczeniem koniecznie zmierz napiecie na [2] RTS!    ║
+  ║    Jesli wynosi >3.3V — potrzebny dzielnik rezystorowy lub     ║
+  ║    konwerter poziomow (np. BSS138 / TXS0102).                   ║
+  ╚══════════════════════════════════════════════════════════════════╝
+
+  JESLI MUSISZ PODPIAC RTS (po pomiarze napiecia):
+
+    Pilot [2] RTS  mierzy 3.3V  → mozna podpiac do Pico GP2  bezposrednio
+    Pilot [2] RTS  mierzy 5V    → KONWERTER POZIOMOW obowiazkowy!
+
+    Bezpieczny dzielnik rezystorowy (5V → 3.3V):
+
+      Pilot [2] RTS (5V)
+             │
+            [R1 = 10kΩ]
+             │
+             ├──────────────────────────────► Pico GP2 (CTS)
+             │
+            [R2 = 20kΩ]
+             │
+            GND
 
   POZIOMY NAPIECIA:
-    Sprawdz napiecie logiczne pilota (czesto 3.3V lub 5V).
-    Pico pracuje na 3.3V — jesli pilot ma 5V uzyj konwertera poziomow!
+    Sprawdz dokumentacje pilota lub zmierz multimetrem napiecie TXD i RTS.
+    Pico GP0-GP4 toleruja MAX 3.3V — przekroczenie niszczy Pico!
 
   KONFIGURACJA TERMINALA:
     Baudrate : najczesciej 9600 lub 115200 — sprawdz dokumentacje pilota
     Bity     : 8
     Parzystosc: brak (lub Even — sprawdz spec pilota)
     Stop     : 1
-    Flow ctrl: brak  (lub Hardware jesli uzyto RTS na GP2)
+    Flow ctrl: brak  (zacznij bez flow control — BEZPIECZNIEJ)
 
-  WARIANT BEZ FLOW CONTROL (najprostszy):
+  URUCHOMIENIE (zaczynaj od minimalnego polaczenia!):
     mpremote cp main.py :main.py + reset
     Wpisz +++ -> wybierz baudrate pilota -> [go]
-
-  WARIANT Z RTS (jesli pilot wymaga flow control):
-    mpremote cp main_rtscts.py :main.py + reset
-    Wpisz +++ -> [rts] -> wybierz baudrate -> [go]
