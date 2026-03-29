@@ -1,17 +1,17 @@
-"""
-Raspberry Pi Pico - Przezroczysty most USB <-> UART
-=====================================================
+﻿"""
+Raspberry Pi Pico - Transparent USB <-> UART Bridge (with menu)
+===============================================================
 
-Schemat polaczen:
-  Windows (PuTTY/COM4, 115200) <--USB--> Pico <--UART--> Urzadzenie
+Wiring:
+  Windows (PuTTY/COM4, 115200) <--USB--> Pico <--UART--> Device
 
   Pico GP0 (TX, pin 1)  ---->  (RX)
   Pico GP1 (RX, pin 2)  <----  (TX)
   Pico GND  (pin 3/38)  ----   GND
 
-Pico dziala jako przezroczysty konwerter USB<->UART:
-  - LED swieci = uart aktywny; miga = transfer danych
-  - Wpisz +++ aby wejsc do menu
+Features:
+  - LED on = bridge active; blink = data transfer
+  - Type +++ to enter menu
 """
 
 import machine
@@ -20,22 +20,21 @@ import utime
 import uselect
 import micropython
 
-# 10s okno dla mpremote, potem blokuj Ctrl+C
+# 10s window for mpremote, then block Ctrl+C
 utime.sleep_ms(10000)
 micropython.kbd_intr(-1)
 
-# (numer, baudrate, opis urzadzenia)
 BAUDRATES = [
-    ( 1,   1200, "Stare urzadzenia, czujniki"),
-    ( 2,   2400, "Stare urzadzenia"),
-    ( 3,   4800, "GPS, stare urzadzenia"),
-    ( 4,   9600, "Arduino domyslny, GPS, GSM"),
-    ( 5,  19200, "Modemy, sterowniki PLC"),
-    ( 6,  38400, "Modemy, Bluetooth HC-05/06"),
-    ( 7,  57600, "Bluetooth, szybkie moduly"),
+    ( 1,   1200, "Old devices, sensors"),
+    ( 2,   2400, "Old devices"),
+    ( 3,   4800, "GPS, old devices"),
+    ( 4,   9600, "Arduino default, GPS, GSM"),
+    ( 5,  19200, "Modems, PLC controllers"),
+    ( 6,  38400, "Modems, Bluetooth HC-05/06"),
+    ( 7,  57600, "Bluetooth, fast modules"),
     ( 8,  74880, "ESP8266 boot ROM"),
     ( 9, 115200, "ESP8266/ESP32 Arduino"),
-    (10, 230400, "ESP32 szybki transfer"),
+    (10, 230400, "ESP32 fast transfer"),
 ]
 baudrate = 115200
 
@@ -49,20 +48,20 @@ def usb_print(msg):
 def show_menu():
     usb_print("")
     usb_print("+" + "-" * 54 + "+")
-    usb_print("|       PICO USB<->UART BRIDGE - USTAWIENIA           |")
+    usb_print("|       PICO USB<->UART BRIDGE - SETTINGS             |")
     usb_print("+" + "-" * 54 + "+")
-    usb_print("|  Aktualny baudrate: {:<6}                          |".format(baudrate))
+    usb_print("|  Current baudrate: {:<6}                           |".format(baudrate))
     usb_print("+" + "-" * 54 + "+")
-    usb_print("|  Nr | Baudrate |  Opis                               |")
+    usb_print("|  Nr | Baudrate |  Description                        |")
     usb_print("|" + "-" * 54 + "|")
-    for nr, baud, opis in BAUDRATES:
+    for nr, baud, desc in BAUDRATES:
         marker = " <--" if baud == baudrate else "    "
-        usb_print("|  {:>2} | {:>8} | {:<35} |{}".format(nr, baud, opis, marker))
+        usb_print("|  {:>2} | {:>8} | {:<35} |{}".format(nr, baud, desc, marker))
     usb_print("+" + "-" * 54 + "+")
-    usb_print("|  Wpisz numer (1-10) i Enter aby zmienic baudrate     |")
-    usb_print("|  Wpisz [go]  i Enter aby wrocic do trybu bridge      |")
+    usb_print("|  Type number (1-10) + Enter to change baudrate       |")
+    usb_print("|  Type [go]  + Enter to return to bridge mode         |")
     usb_print("+" + "-" * 54 + "+")
-    usb_print("|  Aby wejsc do menu: wpisz +++                        |")
+    usb_print("|  To enter menu: type +++                             |")
     usb_print("+" + "-" * 54 + "+")
 
 uart = make_uart(baudrate)
@@ -73,7 +72,7 @@ for _ in range(6):
     utime.sleep_ms(100)
 led.on()
 
-usb_print("=== UART GOTOWY | {} baud | GP0->TX GP1->RX | wpisz +++ = menu ===".format(baudrate))
+usb_print("=== BRIDGE READY | {} baud | GP0->TX GP1->RX | type +++ for menu ===".format(baudrate))
 
 poll     = uselect.poll()
 poll.register(sys.stdin, uselect.POLLIN)
@@ -95,15 +94,15 @@ while True:
                             show_menu()
                         elif line.lower() == "go":
                             cmd_mode = False
-                            usb_print("  Bridge aktywny | {} baud".format(baudrate))
+                            usb_print("  Bridge active | {} baud".format(baudrate))
                         elif line.isdigit() and 1 <= int(line) <= len(BAUDRATES):
-                            nr, new_baud, opis = BAUDRATES[int(line) - 1]
+                            nr, new_baud, desc = BAUDRATES[int(line) - 1]
                             baudrate = new_baud
                             uart = make_uart(baudrate)
-                            usb_print("  OK - baudrate zmieniony na {} ({})".format(baudrate, opis))
-                            usb_print("  Wpisz [go] aby wrocic do bridge lub numer aby zmienic.")
+                            usb_print("  OK - baudrate set to {} ({})".format(baudrate, desc))
+                            usb_print("  Type [go] to return to bridge or number to change.")
                         else:
-                            usb_print("  Nieznana opcja: '{}'  (wpisz numer 1-{} lub 'go')".format(line, len(BAUDRATES)))
+                            usb_print("  Unknown option: '{}'  (type 1-{} or 'go')".format(line, len(BAUDRATES)))
                     elif ch == "\x08":
                         cmd_buf = cmd_buf[:-1]
                     else:
