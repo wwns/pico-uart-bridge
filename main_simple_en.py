@@ -17,17 +17,30 @@ led  = Pin(25, Pin.OUT)
 poll = uselect.poll()
 poll.register(sys.stdin, uselect.POLLIN)
 
+# 3x blink = ready
+for _ in range(3):
+    led.on();  utime.sleep_ms(80)
+    led.off(); utime.sleep_ms(80)
 led.on()
 
+_last_beat = utime.ticks_ms()
+
 while True:
+    active = False
     if poll.poll(0):
         data = sys.stdin.buffer.read(64)
         if data:
             uart.write(data)
-            led.toggle()
+            active = True
     n = uart.any()
     if n:
         r = uart.read(n)
         if r:
             sys.stdout.buffer.write(r)
-            led.toggle()
+            active = True
+    if active:
+        led.toggle()
+        _last_beat = utime.ticks_ms()
+    elif utime.ticks_diff(utime.ticks_ms(), _last_beat) >= 500:
+        led.toggle()
+        _last_beat = utime.ticks_ms()
