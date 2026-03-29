@@ -11,17 +11,17 @@ from machine import UART, Pin
 
 BAUDRATE = 115200
 
-micropython.kbd_intr(-1)
-uart = UART(0, baudrate=BAUDRATE, tx=Pin(0), rx=Pin(1), timeout=0)
-led  = Pin(25, Pin.OUT)
-poll = uselect.poll()
-poll.register(sys.stdin, uselect.POLLIN)
-
-# 3x blysk = gotowy
+# LED blink natychmiast po starcie
+led = Pin(25, Pin.OUT)
 for _ in range(3):
     led.on();  utime.sleep_ms(80)
     led.off(); utime.sleep_ms(80)
 led.on()
+
+micropython.kbd_intr(-1)
+uart = UART(0, baudrate=BAUDRATE, tx=Pin(0), rx=Pin(1), timeout=0)
+poll = uselect.poll()
+poll.register(sys.stdin, uselect.POLLIN)
 
 _last_beat = utime.ticks_ms()
 
