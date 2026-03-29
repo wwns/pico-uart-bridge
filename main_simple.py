@@ -3,6 +3,7 @@ Raspberry Pi Pico - Prosty UART bridge bez menu
 ================================================
 Pico GP0 (TX, pin 1)  -> (RX) urzadzenia
 Pico GP1 (RX, pin 2)  <- (TX) urzadzenia
+Pico GP3 (RTS, pin 5) -> (CTS) urzadzenia  (stale HIGH = deasserted)
 Pico GND  (pin 3)     -> GND
 Zmien BAUDRATE na potrzebny.
 """
@@ -13,6 +14,7 @@ BAUDRATE = 115200
 
 # LED blink natychmiast po starcie
 led = Pin(25, Pin.OUT)
+Pin(3, Pin.OUT, value=1)  # RTS stale HIGH (deasserted)
 for _ in range(3):
     led.on();  utime.sleep_ms(80)
     led.off(); utime.sleep_ms(80)
