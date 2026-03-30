@@ -3,25 +3,25 @@ Raspberry Pi Pico - Simple UART bridge (no menu)
 =================================================
 Pico GP0 (TX, pin 1)  -> (RX) device
 Pico GP1 (RX, pin 2)  <- (TX) device
-Pico GP3 (RTS, pin 5) -> (CTS) device   (static HIGH = deasserted)
 Pico GND  (pin 3)     -> GND
 Change BAUDRATE as needed.
 """
-import sys, uselect, micropython
+import sys, utime, uselect, micropython
 from machine import UART, Pin
 
 BAUDRATE = 115200
 
 # LED blink immediately on start
 led = Pin(25, Pin.OUT)
-Pin(3, Pin.OUT, value=1)  # RTS static HIGH (deasserted)
 for _ in range(3):
     led.on();  utime.sleep_ms(80)
     led.off(); utime.sleep_ms(80)
 led.on()
 
+utime.sleep_ms(10000)  # 10s window for mpremote
 micropython.kbd_intr(-1)
 uart = UART(0, baudrate=BAUDRATE, tx=Pin(0), rx=Pin(1), timeout=0)
+Pin(1).init(pull=Pin.PULL_UP)
 poll = uselect.poll()
 poll.register(sys.stdin, uselect.POLLIN)
 
